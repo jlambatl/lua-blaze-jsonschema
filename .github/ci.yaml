@@ -1,0 +1,76 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  lua:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [linux, macos-arm64]
+        lua: [lua=5.2, lua=5.3, lua=5.4, luajit=2.0, luajit=2.1]
+        include:
+        - os: linux
+          runner: ubuntu-latest
+        - os: macos-arm64
+          runner: macos-latest
+        exclude:
+        - os: macos-arm64
+          lua: luajit=2.0
+    name: ${{ matrix.os }} (${{ matrix.lua }})
+    runs-on: ${{ matrix.runner }}
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE.
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name:  Install libreadline
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y libreadline-dev libpcre2-dev
+
+      - name: Install Lua (${{ matrix.lua }})
+        run: |
+          pipx install git+https://github.com/luarocks/hererocks
+          hererocks lua_install -r^ --${{ matrix.lua }}
+        env:
+          MACOSX_DEPLOYMENT_TARGET: 11.0
+      - name: Build lua-blaze
+        run: |
+          source lua_install/bin/activate
+          luarocks make
+      - name: Run tests
+        run: |
+          source lua_install/bin/activate
+          luarocks install --lua-version=${{ matrix.lua }} busted
+          luarocks install --lua-version=${{ matrix.lua }} dkjson
+          luarocks install --lua-version=${{ matrix.lua }} lrexlib-pcre2
+          busted --verbose
+
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        lua: [lua=5.2, lua=5.3, lua=5.4, luajit=2.0, luajit=2.1]
+        target: [vs]
+    runs-on: windows-2022
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE.
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Install Lua (${{ matrix.lua }})
+        run: |
+          pipx install git+https://github.com/luarocks/hererocks
+          hererocks lua_install -r^ --${{ matrix.lua }} --target ${{ matrix.target }}
+      - name: Build lua-blaze
+        run: |
+          .\lua_install\bin\activate
+          luarocks make
+      - name: Run tests
+        run: |
+          .\lua_install\bin\activate
+          luarocks install --lua-version=${{ matrix.lua }} busted
+          luarocks install --lua-version=${{ matrix.lua }} dkjson
+          luarocks install --lua-version=${{ matrix.lua }} lrexlib-pcre2
+          busted --verbose

@@ -1,0 +1,7 @@
+[submodule "deps/blaze"]
+	path = deps/blaze
+	url = https://github.com/sourcemeta/blaze.git
+
+[submodule "deps/json-schema-test-suite"]
+	path = deps/json-schema-test-suite
+	url = https://github.com/json-schema-org/JSON-Schema-Test-Suite.git
