@@ -27,6 +27,7 @@ jobs:
       - name: Install libreadline
         if: runner.os == 'Linux'
         run: |
+          echo "/root/.local/bin" >> $GITHUB_PATH
           sudo apt-get install -y libreadline-dev libpcre2-dev
 
       - name: Install Lua (${{ matrix.lua }})

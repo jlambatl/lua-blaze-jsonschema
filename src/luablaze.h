@@ -20,9 +20,7 @@
 #define LUABLAZE_H
 
 extern "C" {
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include <lua.hpp>
 }
 
 #ifdef _MSC_VER
@@ -32,8 +30,8 @@ extern "C" {
 #endif
 
 extern "C" {
-	// Module entrypoint for `require("luablaze")`.
-	LUABLAZE_EXPORT int luaopen_luablaze(lua_State *L);
+    // Module entrypoint for `require("luablaze")`.
+    LUABLAZE_EXPORT int luaopen_luablaze(lua_State *L);
 }
 
 #endif // LUABLAZE_H

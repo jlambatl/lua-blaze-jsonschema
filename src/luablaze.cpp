@@ -1,3 +1,6 @@
+#include <lua.hpp>
+#include <lauxlib.h>
+
 #include "luablaze.h"
 
 #include <sourcemeta/core/json.h>

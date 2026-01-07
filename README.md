@@ -7,9 +7,9 @@ This project builds a Lua C module named `luablaze` that lets you:
 - Compile a JSON Schema (provided as a JSON string) into a reusable compiled object.
 - Validate JSON instances (provided as JSON strings) against that compiled schema.
 
-## API
+### API
 
-### `luablaze.new(schema_json_string[, dialect_or_options[, options]]) -> CompiledSchema`
+#### `luablaze.new(schema_json_string[, dialect_or_options[, options]]) -> CompiledSchema`
 
 Compiles the given JSON Schema (as a string) and returns a `CompiledSchema` userdata.
 
@@ -30,7 +30,7 @@ luablaze.new(schema_json, { max_depth = 128 })
 - `max_array_length` limits the maximum array length produced when converting Lua tables to JSON values. Default: `100000`. Use `0` for unlimited.
 - `max_depth` limits maximum nesting depth when parsing schema/instance JSON strings (for `new`, `validate_json`, and `validate_output_json`). Default: `128`. Use `0` for unlimited.
 
-### `CompiledSchema:validate(instance_json_string) -> boolean`
+#### `CompiledSchema:validate(instance_json_string) -> boolean`
 
 Validates a Lua table (decoded JSON-like structure) against the compiled schema.
 
@@ -55,25 +55,25 @@ Table conversion rules:
 
 If conversion fails (for example, due to cycles, invalid key types, unsupported Lua value types, or non-finite numbers), the module raises a Lua error.
 
-### `CompiledSchema:validate_json(instance_json_string) -> boolean`
+#### `CompiledSchema:validate_json(instance_json_string) -> boolean`
 
 Parses and validates the JSON instance string against the compiled schema.
 
-### `CompiledSchema:validate_output(instance_json_string) -> string`
+#### `CompiledSchema:validate_output(instance_json_string) -> string`
 
 Validates a Lua table (decoded JSON-like structure) against the compiled schema, returning
 a JSON string containing the validation output in the JSON Schema "basic" output format.
 
-### `CompiledSchema:validate_output_json(instance_json_string) -> string`
+#### `CompiledSchema:validate_output_json(instance_json_string) -> string`
 
 Parses and validates the JSON instance string against the compiled schema, returning
 a JSON string containing the validation output in the JSON Schema "basic" output format.
 
-### `CompiledSchema:evaluate(instance_json_string) -> boolean`
+#### `CompiledSchema:evaluate(instance_json_string) -> boolean`
 
 Alias for `CompiledSchema:validate`.
 
-### `luablaze.validate(compiled_schema, instance_json_string) -> boolean`
+#### `luablaze.validate(compiled_schema, instance_json_string) -> boolean`
 
 Functional form of validation.
 
