@@ -17,6 +17,12 @@ jobs:
         exclude:
           - os: macos-arm64
             lua: luajit=2.0
+          - os: macos-arm64
+            lua: luajit=2.1
+          - os: macos-arm64
+            lua: lua=5.2
+          - os: macos-arm64
+            lua: lua=5.3
     name: ${{ matrix.os }} (${{ matrix.lua }})
     runs-on: ${{ matrix.runner }}
     steps:
@@ -45,6 +51,7 @@ jobs:
             lua=5.4) sudo apt-get update && sudo apt-get install -y libreadline-dev libpcre2-dev cmake build-essential lua5.4 luarocks lua5.4-dev ;;  # Use default if available
             luajit=2.0|luajit=2.1) sudo apt-get update && sudo apt-get install -y libreadline-dev libpcre2-dev cmake build-essential luajit luarocks luajit-dev ;;
           esac
+          echo "file_path=$(ls -alR /usr/local/lib/luarocks/)" >> $GITHUB_OUTPUT
 
       - name: Install Lua and dependencies on macOS
         if: runner.os == 'macOS'
@@ -59,10 +66,10 @@ jobs:
       - name: Install luarocks dependencies
         if: always()
         run: |
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install busted
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install dkjson
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lrexlib-pcre2
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lua-schema
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install busted
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install dkjson
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lrexlib-pcre2
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lua-schema
 
       - name: Build lua-blaze
         if: always()

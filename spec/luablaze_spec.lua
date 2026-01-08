@@ -302,3 +302,33 @@ describe("Testing Malicious Lua data structures", function()
     assert.is_true(tostring(err):find("Array length exceeds max_array_length", 1, true) ~= nil)
   end)
 end)
+
+describe("Required fields", function()
+  it("fails when required fields are missing", function()
+    local schema = "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"s\":{\"type\":\"string\",\"minLength\":1},\"n\":{\"type\":\"number\"}},\"required\":[\"s\",\"n\"]}"
+    local compiled = luablaze.new(schema)
+
+    assert.is_false(compiled:validate_json("{}"))
+    assert.is_false(compiled:validate_json("{\"s\":\"ok\"}"))
+    assert.is_false(compiled:validate_json("{\"n\":1}"))
+  end)
+
+  it("fails when required string fields are null or empty", function()
+    local schema = "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"s\":{\"type\":\"string\",\"minLength\":1},\"n\":{\"type\":\"number\"}},\"required\":[\"s\",\"n\"]}"
+    local compiled = luablaze.new(schema)
+
+    assert.is_false(compiled:validate_json("{\"s\":null,\"n\":1}"))
+    assert.is_false(compiled:validate_json("{\"s\":\"\",\"n\":1}"))
+    assert.is_true(compiled:validate_json("{\"s\":\"ok\",\"n\":1}"))
+  end)
+
+  it("fails when required number fields are null or wrong type", function()
+    local schema = "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"s\":{\"type\":\"string\",\"minLength\":1},\"n\":{\"type\":\"number\"}},\"required\":[\"s\",\"n\"]}"
+    local compiled = luablaze.new(schema)
+
+    assert.is_false(compiled:validate_json("{\"s\":\"ok\",\"n\":null}"))
+    assert.is_false(compiled:validate_json("{\"s\":\"ok\",\"n\":\"\"}"))
+    assert.is_false(compiled:validate_json("{\"s\":\"ok\",\"n\":\"1\"}"))
+    assert.is_true(compiled:validate_json("{\"s\":\"ok\",\"n\":0}"))
+  end)
+end)
