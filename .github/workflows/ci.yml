@@ -89,10 +89,10 @@ jobs:
                 echo "Error: LUA_LIBFILE is not set to a valid file: '${LUA_LIBFILE}'"
                 exit 1
               fi
-              luarocks --lua-version=${{ steps.version.outputs.lua_version }} --verbose make
+              sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} --verbose make
               ;;
             *)
-              luarocks --verbose make
+              sudo luarocks --verbose make
               ;;
           esac
       - name: Run tests
@@ -104,8 +104,8 @@ jobs:
             export LUA=$(which lua)
           fi
           echo "Debug: Using Lua version $($LUA -v)"
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install busted
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install dkjson
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lrexlib-pcre2
-          luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lua-schema
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install busted
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install dkjson
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lrexlib-pcre2
+          sudo luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lua-schema
           busted --verbose
