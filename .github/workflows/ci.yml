@@ -71,13 +71,13 @@ jobs:
                 echo "Error: LUA_LIBFILE is not set to a valid file: '${LUA_LIBFILE}'"
                 exit 1
               fi
-              sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} make
+              sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} make --force
               ;;
             *)
               sudo -E luarocks make
               ;;
           esac
-      - name: Run tests
+      - name: Library Version Tests
         if: always()
         run: |
           if [ "${{ runner.os }}" = "Linux" ]; then
@@ -85,8 +85,33 @@ jobs:
           else
             export LUA=$(which lua)
           fi
-          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install busted
-          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install dkjson
-          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lrexlib-pcre2
-          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lua-schema
-          busted --verbose --cpath=/usr/local/lib/luarocks/rocks-${{ steps.version.outputs.lua_version }}/?.so
+          busted --lua=/usr/bin/lua${{ steps.version.outputs.lua_version }} --verbose spec/info_spec.lua
+      - name: JSON Schema test suite
+        if: always()
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            export LUA=/usr/bin/lua${{ steps.version.outputs.lua_version }}
+          else
+            export LUA=$(which lua)
+          fi
+          busted --lua=/usr/bin/lua${{ steps.version.outputs.lua_version }} --verbose spec/luablaze_spec.lua
+      - name: Performance Tests
+        if: always()
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            export LUA=/usr/bin/lua${{ steps.version.outputs.lua_version }}
+          else
+            export LUA=$(which lua)
+          fi
+          busted --lua=/usr/bin/lua${{ steps.version.outputs.lua_version }} --verbose spec/perf_spec.lua
+      - name: Security related tests
+        if: always()
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            export LUA=/usr/bin/lua${{ steps.version.outputs.lua_version }}
+          else
+            export LUA=$(which lua)
+          fi
+          busted --cpath=./build/?.so --lua=/usr/bin/lua${{ steps.version.outputs.lua_version }} --verbose spec/configurable_recursion_spec.lua
+          busted --cpath=./build/?.so --lua=/usr/bin/lua${{ steps.version.outputs.lua_version }} --verbose spec/overflow_protection_spec.lua
+          busted --cpath=./build/?.so --lua=/usr/bin/lua${{ steps.version.outputs.lua_version }} --verbose spec/recursion_limits_spec.lua
