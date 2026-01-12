@@ -7,7 +7,7 @@ This project builds a Lua C module named `luablaze` that lets you:
 - Compile a JSON Schema (provided as a JSON string) into a reusable compiled object.
 - Validate JSON instances (provided as JSON strings) against that compiled schema.
 
-## Performaance
+## Performance
 
 As of the time of writing this, lua-schema `luarocks install lua-schema` was the most performant and compliant 
 lua implementation of json-schema validation available. This project was created to provide a faster alternative.
@@ -169,7 +169,7 @@ Notes:
 
 ### Requirements
 
-- CMake >= 3.23
+- CMake >= 3.10
 - A C++20 compiler
 - Lua >= 5.3 (headers + library)
 - Git (only needed if you want CMake to auto-init submodules)
