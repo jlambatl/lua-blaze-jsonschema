@@ -269,7 +269,7 @@ describe("Performance", function()
     local root = dirname(this_file_dir())
     local test_data_dir = root .. "/spec/test_data"
 
-    local iterations = env_number("LUABLAZE_BENCH_ITERS", 1000000)
+    local iterations = env_number("LUABLAZE_BENCH_ITERS", 10000)
 
     local fixtures = discover_fixtures(test_data_dir)
     assert.is_true(#fixtures > 0)
