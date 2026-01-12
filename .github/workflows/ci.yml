@@ -1,0 +1,92 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  lua:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [linux]
+        lua: [lua=5.3, lua=5.4]
+        include:
+          - os: linux
+            runner: ubuntu-latest
+        exclude:
+          - os: linux
+            lua: luajit=2.0
+          - os: linux
+            lua: luajit=2.1
+    name: ${{ matrix.os }} (${{ matrix.lua }})
+    runs-on: ${{ matrix.runner }}
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE.
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Ensure submodules are present
+        if: always()
+        run: |
+          git submodule update --init --recursive
+      - name: version exporter
+        id: version
+        run: |
+          LUA_VERSION=$(echo "${{ matrix.lua }}" | sed 's/^[^=]*=//')
+          echo "lua_version=${LUA_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Install Lua and dependencies on Linux
+        if: runner.os == 'linux'
+        run: |
+          case "${{ matrix.lua }}" in
+            lua=5.3) sudo apt-get update && sudo apt-get install -y libreadline-dev libpcre2-dev cmake build-essential lua5.3 luarocks lua5.3-dev ;;
+            lua=5.4) sudo apt-get update && sudo apt-get install -y libreadline-dev libpcre2-dev cmake build-essential lua5.4 luarocks lua5.4-dev ;;  # Use default if available
+            luajit=2.0|luajit=2.1) sudo apt-get update && sudo apt-get install -y libreadline-dev libpcre2-dev cmake build-essential luajit luarocks luajit-dev ;;
+          esac
+
+      - name: Install luarocks dependencies
+        if: always()
+        run: |
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install busted
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install dkjson
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lrexlib-pcre2
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lua-schema
+
+      - name: Build lua-blaze
+        if: always()
+        run: |
+          case "${{ runner.os }}" in
+            Linux|linux)
+              LUA_VER=${{ steps.version.outputs.lua_version }}
+              export LUA_INCDIR=/usr/include/lua${LUA_VER}
+              export LUA_LIBFILE=$(ls -1 /usr/lib/x86_64-linux-gnu/liblua${LUA_VER}.so* 2>/dev/null | head -n 1)
+              echo "Debug: LUA_INCDIR=${LUA_INCDIR}"
+              echo "Debug: LUA_LIBFILE=${LUA_LIBFILE}"
+              if [ -z "${LUA_INCDIR}" ] || [ ! -d "${LUA_INCDIR}" ]; then
+                echo "Error: LUA_INCDIR is not set to a valid directory: '${LUA_INCDIR}'"
+                exit 1
+              fi
+              if [ -z "${LUA_LIBFILE}" ] || [ ! -f "${LUA_LIBFILE}" ]; then
+                echo "Error: LUA_LIBFILE is not set to a valid file: '${LUA_LIBFILE}'"
+                exit 1
+              fi
+              sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} make
+              ;;
+            *)
+              sudo -E luarocks make
+              ;;
+          esac
+      - name: Run tests
+        if: always()
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            export LUA=/usr/bin/lua${{ steps.version.outputs.lua_version }}
+          else
+            export LUA=$(which lua)
+          fi
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install busted
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install dkjson
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lrexlib-pcre2
+          sudo -E luarocks --lua-version=${{ steps.version.outputs.lua_version }} install lua-schema
+          busted --verbose --cpath=/usr/local/lib/luarocks/rocks-${{ steps.version.outputs.lua_version }}/?.so
