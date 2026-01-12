@@ -16,16 +16,16 @@ endif
 all: build
 
 configure:
-$(CMAKE) -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+	$(CMAKE) -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
 build: configure
-$(CMAKE) --build $(BUILD_DIR) --parallel $(NPROC)
- 
+	$(CMAKE) --build $(BUILD_DIR) --parallel $(NPROC)
+
 test: build
-$(CTEST) --test-dir $(BUILD_DIR)
- 
+	$(CTEST) --test-dir $(BUILD_DIR)
+
 clean:
-$(CMAKE) --build $(BUILD_DIR) --target clean || true
- 
+	$(CMAKE) --build $(BUILD_DIR) --target clean || true
+
 rebuild: clean
-$(MAKE) build
+	$(MAKE) build
