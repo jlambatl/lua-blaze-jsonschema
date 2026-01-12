@@ -500,7 +500,7 @@ static bool lua_table_to_json_abs(lua_State *L, const int abs_index, std::unorde
         sourcemeta::core::JSON value{nullptr};
         if (!lua_value_to_json_abs(L, lua_gettop(L), seen, max_array_length, max_recursion_depth, depth + 1, value,
                                    error)) {
-            lua_pop(L, 1);
+            lua_pop(L, 2);
             if (ptr != nullptr) {
                 seen.erase(ptr);
             }
